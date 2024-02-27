@@ -177,3 +177,6 @@ cython_debug/
 .vscode/launch.json
 compose-dev.yaml
 Include/site/python3.12/greenlet/greenlet.h
+.metals/metals.lock.db
+.metals/metals.mv.db
+.vscode/settings.json

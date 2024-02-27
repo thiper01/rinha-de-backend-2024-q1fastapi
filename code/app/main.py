@@ -5,7 +5,7 @@ from enum import Enum
 from .crud import get_extrato, get_info, get_cliente, get_saldo_for_update, create_transaction
 from .schemas import TransacaoBase
 from sqlalchemy.orm import Session
-from .database import engine, SessionLocal
+from .database import SessionLocal
 
 
 class TransType(str, Enum):
@@ -29,19 +29,12 @@ def root():
 def transacoes(transacao: TransacaoBase, id: int, db: Session = Depends(get_db)):
     transacao.model_dump()
     valor_tran = transacao.valor
-    session = Session(engine)
-    with session.begin():
+    with db.begin():
         try:
-            # cliente = Clientes.objects.get(id=id)
             cliente = get_cliente(db, id)
             saldo = get_saldo_for_update(db, id)
         except:
             raise HTTPException(status_code=404)
-
-            # erro = " \n".join(e.messages)
-            # response = HttpResponse(erro)
-            # response.status_code = 422
-            # return response
 
         if transacao.tipo == "d":
             if (saldo.valor+cliente.limite)-valor_tran < 0: # type: ignore
@@ -50,8 +43,8 @@ def transacoes(transacao: TransacaoBase, id: int, db: Session = Depends(get_db))
                 saldo.valor -= valor_tran # type: ignore
         else:
             saldo.valor += valor_tran # type: ignore
+
         create_transaction(db, transacao, id)
-        
     response = {
         "limite": cliente.limite, # type: ignore
         "saldo": saldo.valor} # type: ignore
@@ -59,8 +52,7 @@ def transacoes(transacao: TransacaoBase, id: int, db: Session = Depends(get_db))
 
 @app.get("/clientes/{id}/extrato")
 def extrato(id: int, db: Session = Depends(get_db)):
-    session = Session(engine)
-    with session.begin():
+    with db.begin():
         try:
             cliente, saldo = get_info(db ,id)
         except:

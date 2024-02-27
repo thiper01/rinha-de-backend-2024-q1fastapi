@@ -16,7 +16,6 @@ class Transacao(TransacaoBase):
     class Config:
         orm_mode = True
 
-
 class Saldo(BaseModel):
     id: int
     cliente_id: int

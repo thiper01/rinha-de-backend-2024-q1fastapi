@@ -27,5 +27,4 @@ def get_extrato(db: Session, user_id: int):
 def create_transaction(db: Session, transacao: schemas.TransacaoBase, id: int):
     db_transacao = models.Transacoes(**transacao.model_dump(), cliente_id=id)
     db.add(db_transacao)
-    db.commit()
     return
