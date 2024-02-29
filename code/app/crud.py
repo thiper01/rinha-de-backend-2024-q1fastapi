@@ -1,18 +1,17 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import desc, select
-
 from . import models, schemas
 
 def get_cliente(db: Session, id: int):
     return db.query(models.Clientes).filter(models.Clientes.id == id).first()
 
 def get_saldo_for_update(db: Session, user_id: int):
-    return db.query(models.Saldos).filter(models.Saldos.cliente_id == user_id).with_for_update().first()
+    return db.execute(select(models.Saldos.valor).filter(models.Saldos.cliente_id == user_id).with_for_update()).first()
 
 def get_info(db: Session, user_id: int):
     cliente = db.query(models.Clientes).filter(models.Clientes.id == user_id).first()
-    saldo = cliente.saldo[0] # type: ignore
-    return cliente, saldo
+    saldo = db.execute(select(models.Saldos.valor).filter(models.Saldos.cliente_id == user_id)).first()
+    return cliente, saldo.valor
 
 def get_extrato(db: Session, user_id: int):
     

@@ -1,7 +1,7 @@
 from .database import Base
 from sqlalchemy import Column, ForeignKey, Integer, String, CHAR, TIMESTAMP
 from sqlalchemy.orm import relationship
-import datetime
+from sqlalchemy.schema import FetchedValue
 
 
 ### SQLAlchemy models ###
@@ -34,6 +34,6 @@ class Transacoes(Base):
     valor = Column(Integer, nullable=False)
     tipo = Column(CHAR(1), nullable=False)
     descricao = Column(String(10), nullable=False)
-    realizada_em = Column(TIMESTAMP, default=datetime.datetime.now(datetime.timezone.utc), nullable=False)
+    realizada_em = Column(TIMESTAMP, server_default=FetchedValue())
 
     cliente = relationship("Clientes", back_populates="transacoes")

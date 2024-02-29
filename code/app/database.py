@@ -6,8 +6,8 @@ SQLALCHEMY_DATABASE_URL = "postgresql+psycopg2://admin:123@db/rinha"
 
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL,
-    isolation_level="REPEATABLE READ",
+    # isolation_level="REPEATABLE READ",
 )
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+SessionLocal = sessionmaker(bind=engine)
 
 Base = declarative_base()

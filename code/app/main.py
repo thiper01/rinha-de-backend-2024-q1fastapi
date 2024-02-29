@@ -6,11 +6,9 @@ from .crud import get_extrato, get_info, get_cliente, get_saldo_for_update, crea
 from .schemas import TransacaoBase
 from sqlalchemy.orm import Session
 from .database import SessionLocal
+from sqlalchemy import desc, select
+from . import models, schemas
 
-
-class TransType(str, Enum):
-    credito = "c"
-    debito = "d"
 
 app = FastAPI()
 
@@ -32,9 +30,10 @@ def transacoes(transacao: TransacaoBase, id: int, db: Session = Depends(get_db))
     with db.begin():
         try:
             cliente = get_cliente(db, id)
-            saldo = get_saldo_for_update(db, id)
         except:
             raise HTTPException(status_code=404)
+        
+        saldo = db.query(models.Saldos).filter(models.Saldos.cliente_id == id).with_for_update().one() #get_saldo_for_update(db, id)
 
         if transacao.tipo == "d":
             if (saldo.valor+cliente.limite)-valor_tran < 0: # type: ignore
@@ -43,8 +42,9 @@ def transacoes(transacao: TransacaoBase, id: int, db: Session = Depends(get_db))
                 saldo.valor -= valor_tran # type: ignore
         else:
             saldo.valor += valor_tran # type: ignore
-
+        
         create_transaction(db, transacao, id)
+
     response = {
         "limite": cliente.limite, # type: ignore
         "saldo": saldo.valor} # type: ignore
@@ -61,7 +61,7 @@ def extrato(id: int, db: Session = Depends(get_db)):
         last_tran = get_extrato(db, id)
     response = {
         "saldo": {
-            "total": saldo.valor,
+            "total": saldo,
             "data_extrato": datetime.datetime.now(datetime.timezone.utc),
             "limite": cliente.limite # type: ignore
         },
